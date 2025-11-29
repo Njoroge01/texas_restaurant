@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container mt-3">
+
+    <h2 class="mb-2">Texas Restaurant - POS</h2>
+
+    {% if table %}
+        <div class="alert alert-primary text-center">
+            Serving Table <strong>{{ table.number }}</strong>
+        </div>
+    {% endif %}
+
+    <!-- ✅ Search -->
+    <input id="searchInput" class="form-control mb-3" placeholder="Search menu items...">
+
+    <!-- ✅ Category Tabs -->
+    <ul class="nav nav-tabs mb-3" id="categoryTabs">
+        {% for category in grouped_items %}
+        <li class="nav-item">
+            <button class="nav-link {% if forloop.first %}active{% endif %}"
+                    data-category="{{ category }}">
+                {{ category }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="row">
+        <!-- ✅ Menu Section -->
+        <div class="col-md-8">
+            {% for category, items in grouped_items.items %}
+            <div class="category-panel {% if not forloop.first %}d-none{% endif %}" data-category="{{ category }}">
+                <h4 class="mb-2">{{ category }}</h4>
+                <div class="row">
+                    {% for item in items %}
+                    <div class="col-6 col-md-4 mb-3 menu-item" data-name="{{ item.name|lower }}">
+                        
+                        {% if item.is_available %}
+                            <button class="btn btn-success w-100 p-3 addBtn"
+                                data-id="{{ item.id }}"
+                                data-name="{{ item.name }}"
+                                data-price="{{ item.price }}">
+                                <strong>{{ item.name }}</strong><br>
+                                <small>Ksh {{ item.price }}</small>
+                            </button>
+
+                        {% else %}
+                            <button class="btn btn-secondary w-100 p-3" disabled>
+                                <strong>{{ item.name }}</strong><br>
+                                <small class="text-warning">Out of Stock</small>
+                            </button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ✅ Cart Section -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4 class="text-center">Order Cart</h4>
+
+                <input id="customerName" class="form-control mb-2" placeholder="Customer name">
+
+                <table class="table table-sm table-striped mt-2">
+                    <thead>
+                        <tr>
+                            <th>Item</th><th>Qty</th><th>Total</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTable"></tbody>
+                </table>
+
+                <p>Subtotal: Ksh <span id="subtotal">0.00</span></p>
+                <p>Tax: <input id="tax" type="number" value="0" step="0.01" class="form-control form-control-sm" style="width:100px;display:inline"></p>
+                <p>Discount: <input id="discount" type="number" value="0" step="0.01" class="form-control form-control-sm" style="width:100px;display:inline"></p>
+
+                <h5 class="mt-2">Total: Ksh <span id="grandTotal">0.00</span></h5>
+
+                <button onclick="submitOrder()" class="btn btn-primary w-100 mt-2">Submit Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ POS JavaScript -->
+<script>
+let cart = [];
+
+// ✅ Category Tabs
+const tabs = document.querySelectorAll('#categoryTabs button');
+const panels = document.querySelectorAll('.category-panel');
+tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        const cat = btn.dataset.category;
+        panels.forEach(p => p.classList.toggle('d-none', p.dataset.category !== cat));
+    });
+});
+
+// ✅ Search Filter
+document.getElementById("searchInput").addEventListener("keyup", (e) => {
+    const term = e.target.value.toLowerCase();
+    document.querySelectorAll(".menu-item").forEach(item => {
+        item.style.display = item.dataset.name.includes(term) ? "" : "none";
+    });
+});
+
+// ✅ MENU ADD HANDLER
+document.querySelectorAll('.addBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        addToCart(
+            parseInt(btn.dataset.id),
+            btn.dataset.name,
+            parseFloat(btn.dataset.price)
+        );
+    });
+});
+
+// ✅ Cart Logic
+function addToCart(id, name, price){
+    const found = cart.find(c=>c.id===id);
+    if(found) found.quantity++;
+    else cart.push({id,name,price,quantity:1});
+    renderCart();
+}
+function changeQty(i,v){ cart[i].quantity = Math.max(1,parseInt(v)||1); renderCart(); }
+function removeItem(i){ cart.splice(i,1); renderCart(); }
+
+function renderCart(){
+    const tbody = document.getElementById('cartTable');
+    tbody.innerHTML = '';
+    let subtotal = 0;
+
+    cart.forEach((it,i)=>{
+        const total = it.price * it.quantity;
+        subtotal += total;
+        tbody.innerHTML += `
+            <tr>
+                <td>${it.name}</td>
+                <td><input type="number" value="${it.quantity}" min="1"
+                    class="form-control form-control-sm" style="width:55px"
+                    onchange="changeQty(${i},this.value)"></td>
+                <td>${total.toFixed(2)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})">X</button></td>
+            </tr>`;
+    });
+
+    document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+    updateTotals(subtotal);
+}
+
+function updateTotals(sub){
+    const tax = parseFloat(document.getElementById('tax').value)||0;
+    const discount = parseFloat(document.getElementById('discount').value)||0;
+    document.getElementById('grandTotal').innerText = (sub + tax - discount).toFixed(2);
+}
+
+document.getElementById('tax').addEventListener('input', ()=>renderCart());
+document.getElementById('discount').addEventListener('input', ()=>renderCart());
+
+// ✅ CSRF COOKIE HANDLER ✅
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrfToken = getCookie('csrftoken');
+
+// ✅ Submit Order
+
+async function submitOrder() {
+    if (cart.length === 0) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    const payload = {
+        customerName: document.getElementById('customerName').value || 'Walk-in',
+        items: cart,
+        subtotal: parseFloat(document.getElementById('subtotal').innerText),
+        tax: parseFloat(document.getElementById('tax').value) || 0,
+        discount: parseFloat(document.getElementById('discount').value) || 0,
+        total: parseFloat(document.getElementById('grandTotal').innerText)
+    };
+
+    try {
+        const res = await fetch("{% url 'orders:submit_order' %}?table_id={{ table.id }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            console.error("Server error:", await res.text());
+            alert("Server returned an error. Check logs.");
+            return;
+        }
+
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = `/orders/receipt/${data.order_id}/`;
+        } else {
+            alert("Error: " + (data.error || "Unknown error"));
+        }
+    } catch (err) {
+        console.error("Unexpected JS error:", err);
+        alert("An unexpected error occurred.");
+    }
+}
+</script>
+
+{% endblock %}

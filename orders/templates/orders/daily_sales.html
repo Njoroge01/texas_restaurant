@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Sales Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: #eee;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { text-align: center; color: #4caf50; }
+        .card {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: #222;
+        }
+        .summary {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📊 Daily Sales Report</h1>
+<h3 style="text-align:center;">Date: {{ today }}</h3>
+
+<div class="card">
+    <div class="summary">✅ Total Orders: <strong>{{ total_orders }}</strong></div>
+    <div class="summary">💰 Total Revenue: <strong>{{ total_revenue }}</strong></div>
+    <div class="summary">📈 Average Order Value: <strong>{{ avg_order_value }}</strong></div>
+</div>
+
+<div class="card">
+    <h2>💳 Payment Methods</h2>
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Orders</th>
+            <th>Amount</th>
+        </tr>
+        {% for method, stats in payments.items %}
+        <tr>
+            <td>{{ method|title }}</td>
+            <td>{{ stats.count }}</td>
+            <td>{{ stats.total }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="card">
+    <h2>🧾 Completed Orders</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Payment</th>
+        </tr>
+        {% for order in orders_today %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.customer_name|default:"Walk-in" }}</td>
+            <td>{{ order.total }}</td>
+            <td>{{ order.payment_method|title }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Inventory Dashboard</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Ingredient</th>
+            <th>Current Stock</th>
+            <th>Low Stock?</th>
+            <th>Adjust Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ing in ingredients %}
+        <tr>
+            <td>{{ ing.name }}</td>
+            <td>{{ ing.current_stock }}</td>
+            <td>
+                {% if ing.current_stock <= 5 %}
+                    <span style="color:red;">Low</span>
+                {% else %}
+                    <span style="color:green;">OK</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="POST" action="{% url 'update_stock' ing.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="change_stock" value="1" />
+                    <button type="submit" class="btn btn-success btn-sm">Update</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

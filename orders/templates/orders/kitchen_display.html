@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kitchen Screen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #eee;
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            height: calc(100vh - 60px);
+        }
+        .column {
+            flex: 1;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .pending { background-color: rgba(255,165,0,0.15); }
+        .in-progress { background-color: rgba(0,123,255,0.1); }
+        .ready { background-color: rgba(0,255,0,0.12); }
+
+        .column h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #fff;
+        }
+
+        .order-card {
+            background-color: #1e1e1e;
+            border: solid 1px #333;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform .15s;
+        }
+        .order-card:hover {
+            transform: scale(1.02);
+            background-color: #242424;
+        }
+
+        .btn-advance {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px;
+            margin-top: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-advance:hover {
+            background-color: #0056b3;
+        }
+
+        .modal-container {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal {
+            background-color: #1e1e1e;
+            padding: 20px;
+            width: 350px;
+            border-radius: 8px;
+            overflow-y: auto;
+            color: #fff;
+            max-height: 75vh;
+        }
+        .modal h3 { margin-top: 0; }
+        .modal button {
+            border: none;
+            margin-top: 15px;
+            padding: 8px;
+            border-radius: 6px;
+            background-color: #444;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🍽 Kitchen Display</h1>
+
+<div class="container">
+    <div class="column pending">
+        <h2>🟠 Pending</h2>
+        <div id="pending-list"></div>
+    </div>
+
+    <div class="column in-progress">
+        <h2>🔵 In Progress</h2>
+        <div id="in-progress-list"></div>
+    </div>
+
+    <div class="column ready">
+        <h2>✅ Ready</h2>
+        <div id="ready-list"></div>
+    </div>
+</div>
+
+<div class="modal-container" id="modal-container">
+    <div class="modal">
+        <h3 id="modal-title"></h3>
+        <ul id="modal-items"></ul>
+        <button onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    const modalContainer = document.getElementById("modal-container");
+    const modalTitle = document.getElementById("modal-title");
+    const modalItems = document.getElementById("modal-items");
+
+    function closeModal() {
+        modalContainer.style.display = "none";
+    }
+
+    function openModal(orderId) {
+        fetch(`/orders/${orderId}/items/`)
+        .then(res => res.json())
+        .then(data => {
+            modalTitle.textContent = `Order #${orderId}`;
+            modalItems.innerHTML = data.items.map(item => `
+                <li style="color: ${item.item_status === 'ready' ? '#4caf50' : '#ffa500'}">
+                    ${item.name} x ${item.quantity} —
+                    <strong>${item.item_status.toUpperCase()}</strong>
+                </li>
+            `).join('');
+            modalContainer.style.display = "flex";
+        });
+    }
+
+    function advanceOrder(id) {
+        fetch(`/orders/kitchen/order/${id}/advance/`, {
+            method: "POST",
+            headers: {"X-CSRFToken": "{{ csrf_token }}"}
+        }).then(() => loadOrders());
+    }
+
+    function loadOrders() {
+        fetch("/orders/kitchen/data/")
+            .then(res => res.json())
+            .then(data => {
+                const map = {
+                    pending: "pending-list",
+                    in_progress: "in-progress-list",
+                    ready: "ready-list"
+                };
+
+                Object.keys(map).forEach(key => {
+                    const col = document.getElementById(map[key]);
+                    col.innerHTML = "";
+                    data[key].forEach(order => {
+                        col.innerHTML += `
+                        <div class="order-card" onclick="openModal(${order.id})">
+                            <div><strong>Order #${order.id}</strong></div>
+                            <div>Customer: ${order.customer_name || "Walk-in"}</div>
+                            <div>Table: ${order.table_number || "-"}</div>
+                            ${ key !== "ready"
+                                ? `<button class="btn-advance"
+                                    onclick="advanceOrder(${order.id}); event.stopPropagation();">
+                                    Next →
+                                  </button>`
+                                : ""
+                            }
+                        </div>`;
+                    });
+                });
+            });
+    }
+
+    setInterval(loadOrders, 2500);
+    loadOrders();
+</script>
+
+</body>
+</html>

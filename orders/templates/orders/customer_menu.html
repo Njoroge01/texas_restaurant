@@ -1,0 +1,179 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Restaurant Menu - Table {{ table_number }}</title>
+
+<style>
+    body {
+        font-family: Poppins, Arial, sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background: #222;
+        color: #fff;
+        padding: 15px;
+        text-align: center;
+        font-size: 20px;
+        letter-spacing: 1px;
+    }
+
+    /* ✅ Category Tabs */
+    .categories {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 10px;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+        white-space: nowrap;
+    }
+
+    .category-btn {
+        background: #eee;
+        padding: 8px 14px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .category-btn.active {
+        background: #008cff;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    /* ✅ Menu Grid */
+    .menu-grid {
+        padding: 15px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+    }
+
+    .item-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.06);
+        text-align: center;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .item-card:hover {
+        transform: scale(1.02);
+    }
+
+    .item-card img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        background: #ddd;
+    }
+
+    .item-info {
+        padding: 10px;
+    }
+
+    .item-name {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+
+    .item-price {
+        font-size: 14px;
+        color: #008cff;
+        font-weight: bold;
+    }
+
+    .add-btn {
+        margin-top: 8px;
+        width: 100%;
+        padding: 8px 0;
+        background: #00b359;
+        color: white;
+        border: none;
+        border-radius: 0 0 12px 12px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .add-btn:hover {
+        background: #008c46;
+    }
+
+</style>
+</head>
+<body>
+
+<header>
+    Menu — Table {{ table_number }}
+</header>
+
+<!-- ✅ Category Filter -->
+<div class="categories">
+    <div class="category-btn active" onclick="filterCategory('all')">All</div>
+    {% for item in items %}
+        <div class="category-btn" onclick="filterCategory('{{ item.category.name }}')">
+            {{ item.category.name }}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- ✅ Menu Container -->
+<div class="menu-grid">
+    {% for item in items %}
+    <div class="item-card" data-category="{{ item.category.name }}">
+        <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'no-image.jpg' %}{% endif %}" alt="Food Item">
+        <div class="item-info">
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-price">KSh {{ item.price }}</div>
+        </div>
+
+        {% if item.is_available and item.stock|default:0 > 0 %}
+        <!-- ✅ Available -->
+        <button class="add-btn">Add to Order</button>
+       <form method="post" action="{% url 'submit_order' table_number=table.number %}">
+    {% csrf_token %}
+    <button class="btn btn-success mt-3">Submit Order to Kitchen</button>
+</form>
+
+        {% else %}
+        <!-- ❌ Out of Stock -->
+        <button class="add-btn"
+                style="background:#b30000; cursor:not-allowed; opacity:0.6;"
+                disabled>
+            Out of Stock
+        </button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+
+<script>
+function filterCategory(category) {
+    const cards = document.querySelectorAll(".item-card");
+    const buttons = document.querySelectorAll(".category-btn");
+
+    buttons.forEach(btn => btn.classList.remove("active"));
+    event.target.classList.add("active");
+
+    cards.forEach(card => {
+        if (category === "all" || card.dataset.category === category) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Payment - Order #{{ order.id }}</h2>
+
+    <div class="card p-3 mt-3">
+        <p><strong>Total Amount:</strong> Ksh {{ order.total }}</p>
+
+        <label><strong>Select Payment Method:</strong></label>
+        <select id="paymentMethod" class="form-control mb-3">
+            <option value="cash">Cash</option>
+            <option value="mpesa">M-Pesa</option>
+            <option value="card">Card</option>
+        </select>
+
+        <button onclick="pay()" class="btn btn-success w-100">
+            ✅ Complete Payment
+        </button>
+    </div>
+</div>
+
+<script>
+async function pay() {
+    const res = await fetch("{% url 'orders:submit_payment' order.id %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            payment_method: document.getElementById("paymentMethod").value
+        })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        alert("✅ Payment successful!");
+        window.location.href = "/orders/receipt/{{ order.id }}/";
+    } else {
+        alert("❌ " + data.error);
+    }
+}
+</script>
+
+{% endblock %}

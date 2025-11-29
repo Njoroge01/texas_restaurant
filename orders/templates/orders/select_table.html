@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Table</title>
+    <style>
+        .table {
+            display:inline-block;
+            width:100px;
+            height:100px;
+            border-radius:10px;
+            margin:10px;
+            text-align:center;
+            padding-top:35px;
+            font-weight:bold;
+            background:#28a745;
+            color:#fff;
+            text-decoration:none;
+        }
+        .occupied { background:#dc3545 !important; }
+        .reserved { background:#ffc107 !important; }
+    </style>
+</head>
+<body>
+
+<h2>Select Your Table</h2>
+
+<div>
+    {% for table in tables %}
+    <a href="{% url 'orders:pos_with_table' table.id %}">
+        <div class="table {{ table.status }}">
+            Table {{ table.number }}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+
+
+</body>
+</html>

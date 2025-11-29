@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt #{{ order.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 80mm; /* Thermal receipt compatible */
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .logo {
+            width: 60px;
+            height: auto;
+        }
+        .details {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        td {
+            padding: 4px 0;
+        }
+        .total-row td {
+            font-weight: bold;
+            border-top: 1px dashed #000;
+            padding-top: 6px;
+        }
+        @media print {
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    {% load static %}
+<img src="{% static 'images/logo.png' %}" alt="Restaurant Logo" style="width:130px;">
+    <h2>Texas Restaurant</h2>
+    <small>Nairobi, Kenya<br>Tel: +254 712 345678</small>
+</div>
+
+<div class="details">
+    <strong>Order #{{ order.id }}</strong><br>
+    Customer: {{ order.customer_name }}<br>
+    Date: {{ order.created_at|date:"d M Y H:i" }}
+</div>
+
+<table>
+    {% for item in order.items.all %}
+    <tr>
+        <td>{{ item.menu_item.name }} (x{{ item.quantity }})</td>
+        <td style="text-align:right;">KSh {{ item.item_total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<table>
+    <tr>
+        <td>Subtotal:</td>
+        <td style="text-align:right;">KSh {{ order.subtotal }}</td>
+    </tr>
+    <tr>
+        <td>Tax (16% VAT):</td>
+        <td style="text-align:right;">KSh {{ order.tax }}</td>
+    </tr>
+    {% if order.discount > 0 %}
+    <tr>
+        <td>Discount:</td>
+        <td style="text-align:right;">-KSh {{ order.discount }}</td>
+    </tr>
+    {% endif %}
+    <tr class="total-row">
+        <td>Total:</td>
+        <td style="text-align:right;">KSh {{ order.total }}</td>
+        <a href="{% url 'orders:order_payment' order.id %}" class="btn btn-primary mt-3 w-100">
+    💳 Complete Payment
+</a>
+
+    </tr>
+</table>
+
+<br>
+<p style="text-align:center;">Thank you for dining with us!</p>
+
+<button class="print-btn" onclick="window.print()">🖨️ Print</button>
+
+</body>
+</html>
