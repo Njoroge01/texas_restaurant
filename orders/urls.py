@@ -2,11 +2,11 @@ from django.urls import path
 from .views import (
     pos_view, submit_order, get_price, receipt_view, print_receipt,
     kitchen_display, kitchen_data, advance_status, customer_table_select,
-    update_order_status, payment_view, submit_payment, orders_list
+    update_order_status, payment_view, submit_payment, orders_list,
+    customer_menu
 )
 from .views_ajax import get_item_price
 from .views_reports import daily_sales_report
-from .views_customer import customer_menu
 
 app_name = 'orders'
 
@@ -41,5 +41,5 @@ urlpatterns = [
     path("pay/<int:order_id>/submit/", submit_payment, name="submit_payment"),
 
     # Orders list page
-    path("list/", orders_list, name="orders_list"),   # NEW
+    path("list/", orders_list, name="orders_list"),
 ]

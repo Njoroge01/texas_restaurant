@@ -455,9 +455,5 @@ from django.shortcuts import render
 # existing imports and views here...
 
 def orders_list(request):
-    """
-    Placeholder page for all orders
-    """
-    return render(request, 'orders/orders_list.html')
-
+    return render(request, "orders/orders_list.html")
 
