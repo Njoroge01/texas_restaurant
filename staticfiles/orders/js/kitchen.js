@@ -2,8 +2,8 @@
 (function () {
   'use strict';
 
-  const API_DATA = '/orders/kitchen/data/';
-  const ADVANCE_URL = (id) => `/orders/kitchen/order/${id}/advance/`;
+  const API_DATA = window.location.origin + '/orders/kitchen/data/';
+  const ADVANCE_URL = (id) => window.location.origin + `/orders/kitchen/order/${id}/advance/`;
   const POLL_INTERVAL = 5000; // ms
 
   function elt(tag, cls, inner) {

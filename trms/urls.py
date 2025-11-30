@@ -17,14 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import path, include
+from menu import views 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('billing/', include('billing.urls')),
-    path('orders/', include('orders.urls')),
-    path("orders/", include("orders.urls")),
     path("inventory/", include("inventory.urls")),
     path('orders/', include('orders.urls', namespace='orders')),
-
+    path('', views.home, name='home'),
+    path('menu/', include('menu.urls', namespace='menu')),
 
 
 ]
