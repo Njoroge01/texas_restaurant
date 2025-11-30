@@ -450,10 +450,14 @@ def submit_payment(request, order_id):
 
 
 
-# orders/views.py
+from django.shortcuts import render
+
+# existing imports and views here...
+
 def orders_list(request):
+    """
+    Placeholder page for all orders
+    """
     return render(request, 'orders/orders_list.html')
 
-# orders/urls.py
-path("list/", orders_list, name="orders_list"),
 

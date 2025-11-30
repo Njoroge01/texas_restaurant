@@ -21,9 +21,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('billing/', include('billing.urls')),
     path('inventory/', include('inventory.urls')),
-    path('orders/', include('orders.urls', namespace='orders')),
-    path('', include('menu.urls', namespace='menu')),  # <-- add namespace for root
-    # optional: keep /menu/ URLs if needed
-    path('menu/', include('menu.urls', namespace='menu')),
+    path('orders/', include('orders.urls', namespace='orders')),  # orders URLs with namespace
+    path('', include('menu.urls', namespace='menu')),            # homepage and menu URLs
 ]
+
 
