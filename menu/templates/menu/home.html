@@ -2,34 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Texas Restaurant</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        header { background: #ff6f00; color: white; padding: 1rem; text-align: center; }
-        nav a { margin: 0 1rem; color: white; text-decoration: none; font-weight: bold; }
-        nav a:hover { text-decoration: underline; }
-        main { padding: 2rem; text-align: center; }
-        footer { background: #333; color: white; padding: 1rem; text-align: center; margin-top: 2rem; }
-    </style>
+    <title>Texas Restaurant - Test</title>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Texas Restaurant 🍔</h1>
-        <nav>
-            <a href="{% url 'menu:home' %}">Home</a>
-            <a href="{% url 'menu:menu_list' %}">Menu</a>
-            <a href="{% url 'orders:orders_list' %}">Orders</a>
-            <a href="{% url 'admin:index' %}">Admin</a>
-        </nav>
-    </header>
-    <main>
-        <p>Explore our delicious menu and place your order online!</p>
-        <p>Enjoy burgers, steaks, and more — all made fresh daily!</p>
-    </main>
-    <footer>
-        <p>&copy; 2025 Texas Restaurant. All rights reserved.</p>
-    </footer>
+    <h1>Homepage Test</h1>
+    <p>If you see this page, your Django view and Render service are working!</p>
 </body>
 </html>
