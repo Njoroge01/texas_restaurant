@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     pos_view, submit_order, get_price, receipt_view, print_receipt,
     kitchen_display, kitchen_data, advance_status, customer_table_select,
-    update_order_status, payment_view, submit_payment,
+    update_order_status, payment_view, submit_payment, orders_list, 
 )
 from .views_ajax import get_item_price
 from .views_reports import daily_sales_report
@@ -39,4 +39,7 @@ urlpatterns = [
     # Payment
     path("pay/<int:order_id>/", payment_view, name="order_payment"),
     path("pay/<int:order_id>/submit/", submit_payment, name="submit_payment"),
+
+    # orders/urls.py
+path("list/", orders_list, name="orders_list"),
 ]

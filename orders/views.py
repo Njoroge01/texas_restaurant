@@ -448,3 +448,12 @@ def submit_payment(request, order_id):
         "receipt_url": reverse("orders:receipt", args=[order.id])
     })
 
+
+
+# orders/views.py
+def orders_list(request):
+    return render(request, 'orders/orders_list.html')
+
+# orders/urls.py
+path("list/", orders_list, name="orders_list"),
+
